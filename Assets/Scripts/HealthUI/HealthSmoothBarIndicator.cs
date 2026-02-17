@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,8 @@ public sealed class HealthSmoothBarIndicator : MonoBehaviour
     private float _minValue = 0f;
     private float _maxValue = 1f;
     private float _targetValue;
+
+    private Coroutine _smoothRoutine;
 
     private void Awake()
     {
@@ -40,14 +43,31 @@ public sealed class HealthSmoothBarIndicator : MonoBehaviour
             _health.HealthChanged -= OnHealthChanged;
     }
 
-    private void Update()
-    {
-        _slider.value = Mathf.MoveTowards(_slider.value, _targetValue, _fillSpeed * Time.deltaTime);
-    }
-
     private void OnHealthChanged(int current, int max)
     {
         _targetValue = CalculateNormalized(current, max);
+
+        if (_smoothRoutine != null)
+            StopCoroutine(_smoothRoutine);
+
+        _smoothRoutine = StartCoroutine(SmoothChangeRoutine());
+    }
+
+    private IEnumerator SmoothChangeRoutine()
+    {
+        while (Mathf.Approximately(_slider.value, _targetValue) == false)
+        {
+            _slider.value = Mathf.MoveTowards(
+                _slider.value,
+                _targetValue,
+                _fillSpeed * Time.deltaTime
+            );
+
+            yield return null;
+        }
+
+        _slider.value = _targetValue;
+        _smoothRoutine = null;
     }
 
     private void SetImmediate()
