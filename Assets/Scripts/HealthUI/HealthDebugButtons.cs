@@ -1,11 +1,10 @@
 using UnityEngine;
 
-public sealed class HealthDebugButtons : MonoBehaviour
+public class HealthDebugButtons : MonoBehaviour
 {
-    [Header("References")]
     [SerializeField] private Health _health;
 
-    [Header("Amounts")]
+    [Header("Simulation")]
     [SerializeField] private int _damageAmount = 10;
     [SerializeField] private int _healAmount = 10;
 
@@ -13,7 +12,7 @@ public sealed class HealthDebugButtons : MonoBehaviour
     {
         if (_health == null)
         {
-            Debug.LogError($"[{nameof(HealthDebugButtons)}] Не назначен Health. Скрипт отключён.", this);
+            Debug.LogError($"[{nameof(HealthDebugButtons)}] Health не назначен. Скрипт отключён.", this);
             enabled = false;
         }
     }
