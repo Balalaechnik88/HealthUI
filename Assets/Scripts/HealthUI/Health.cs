@@ -4,7 +4,7 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private int _maxHealth = 5;
+    [SerializeField] private int _maxHealth = 100;
 
     [Header("Runtime (read only)")]
     [SerializeField] private int _currentHealth;
@@ -17,7 +17,21 @@ public class Health : MonoBehaviour
 
     private void Awake()
     {
+        if (_maxHealth <= 0)
+        {
+            Debug.LogError($"[{nameof(Health)}] MaxHealth должен быть > 0. Скрипт отключён.", this);
+            enabled = false;
+            return;
+        }
+
         _currentHealth = _maxHealth;
+    }
+
+    private void OnEnable()
+    {
+        if (enabled == false)
+            return;
+
         HealthChanged?.Invoke(_currentHealth, _maxHealth);
     }
 
@@ -26,7 +40,12 @@ public class Health : MonoBehaviour
         if (damage <= 0 || _currentHealth <= 0)
             return;
 
-        _currentHealth = Mathf.Max(_currentHealth - damage, 0);
+        int newHealth = Mathf.Max(_currentHealth - damage, 0);
+
+        if (newHealth == _currentHealth)
+            return;
+
+        _currentHealth = newHealth;
         HealthChanged?.Invoke(_currentHealth, _maxHealth);
 
         if (_currentHealth == 0)
@@ -38,7 +57,12 @@ public class Health : MonoBehaviour
         if (amount <= 0 || _currentHealth <= 0)
             return;
 
-        _currentHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
+        int newHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
+
+        if (newHealth == _currentHealth)
+            return;
+
+        _currentHealth = newHealth;
         HealthChanged?.Invoke(_currentHealth, _maxHealth);
     }
 }

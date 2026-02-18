@@ -1,32 +1,32 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public sealed class HealthBarIndicator : HealthIndicatorBase
+public class HealthBarIndicator : HealthIndicatorBase
 {
-    [SerializeField] private Slider _slider;
+    [SerializeField] protected Slider _slider;
 
-    private float _minValue = 0f;
-    private float _maxValue = 1f;
-
-    protected override bool ValidateView()
+    protected override void OnAwakeValidated()
     {
-        return _slider != null;
+        if (_slider == null)
+        {
+            Debug.LogError($"[{nameof(HealthBarIndicator)}] Slider не назначен. Скрипт отключён.", this);
+            enabled = false;
+        }
     }
 
-    protected override void OnAwake()
+    protected override void Apply(int currentHealth, int maxHealth)
     {
-        _slider.minValue = _minValue;
-        _slider.maxValue = _maxValue;
-        _slider.interactable = false;
+        if (_slider == null)
+            return;
+
+        _slider.value = GetNormalized(currentHealth, maxHealth);
     }
 
-    protected override void ApplyImmediate(int current, int max)
+    protected static float GetNormalized(int currentHealth, int maxHealth)
     {
-        _slider.value = Normalize(current, max);
-    }
+        if (maxHealth <= 0)
+            return 0f;
 
-    protected override void HandleHealthChanged(int current, int max)
-    {
-        _slider.value = Normalize(current, max);
+        return Mathf.Clamp01((float)currentHealth / maxHealth);
     }
 }

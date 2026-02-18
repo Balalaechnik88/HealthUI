@@ -1,27 +1,25 @@
 using TMPro;
 using UnityEngine;
 
-public sealed class HealthTextIndicator : HealthIndicatorBase
+public class HealthTextIndicator : HealthIndicatorBase
 {
+    [Header("UI")]
     [SerializeField] private TMP_Text _text;
 
-    protected override bool ValidateView()
+    protected override void OnAwakeValidated()
     {
-        return _text != null;
+        if (_text == null)
+        {
+            Debug.LogError($"[{nameof(HealthTextIndicator)}] Не назначен TMP_Text. Скрипт отключён.", this);
+            enabled = false;
+        }
     }
 
-    protected override void ApplyImmediate(int current, int max)
+    protected override void Apply(int currentHealth, int maxHealth)
     {
-        SetText(current, max);
-    }
+        if (_text == null)
+            return;
 
-    protected override void HandleHealthChanged(int current, int max)
-    {
-        SetText(current, max);
-    }
-
-    private void SetText(int current, int max)
-    {
-        _text.text = $"{current}/{max}";
+        _text.text = $"{currentHealth}/{maxHealth}";
     }
 }

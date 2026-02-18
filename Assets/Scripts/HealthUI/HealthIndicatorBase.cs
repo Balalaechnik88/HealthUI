@@ -2,12 +2,11 @@ using UnityEngine;
 
 public abstract class HealthIndicatorBase : MonoBehaviour
 {
-    [Header("References")]
     [SerializeField] private Health _health;
 
     protected Health Health => _health;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (_health == null)
         {
@@ -16,54 +15,32 @@ public abstract class HealthIndicatorBase : MonoBehaviour
             return;
         }
 
-        if (ValidateView() == false)
-        {
-            Debug.LogError($"[{GetType().Name}] UI-ссылки не назначены. Скрипт отключён.", this);
-            enabled = false;
-            return;
-        }
-
-        OnAwake();
+        OnAwakeValidated();
     }
 
     private void OnEnable()
     {
-        if (enabled == false)
+        if (_health == null)
             return;
 
-        _health.HealthChanged += OnHealthChangedInternal;
-
-        ApplyImmediate(_health.CurrentHealth, _health.MaxHealth);
+        _health.HealthChanged += OnHealthChanged;
+        Apply(_health.CurrentHealth, _health.MaxHealth);
     }
 
     private void OnDisable()
     {
-        if (_health != null)
-            _health.HealthChanged -= OnHealthChangedInternal;
+        if (_health == null)
+            return;
 
-        OnDisabled();
+        _health.HealthChanged -= OnHealthChanged;
     }
 
-    private void OnHealthChangedInternal(int current, int max)
+    private void OnHealthChanged(int current, int max)
     {
-        HandleHealthChanged(current, max);
+        Apply(current, max);
     }
 
-    protected static float Normalize(int current, int max)
-    {
-        if (max <= 0)
-            return 0f;
+    protected virtual void OnAwakeValidated() { }
 
-        return Mathf.Clamp01((float)current / max);
-    }
-
-    protected abstract bool ValidateView();
-
-    protected virtual void OnAwake() { }
-
-    protected abstract void ApplyImmediate(int current, int max);
-
-    protected abstract void HandleHealthChanged(int current, int max);
-
-    protected virtual void OnDisabled() { }
+    protected abstract void Apply(int currentHealth, int maxHealth);
 }
